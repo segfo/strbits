@@ -63,15 +63,21 @@ impl CharVec{
 impl AsciiCharType for CharVec{
     fn get_chartype_count(&self)->usize{
         let mut num=0;
-        let mut numeric=false;
+        let mut numeric = false;
         let mut v = (*self).clone();
         let mut hexstring = true;
+        let mut alphabet_only_hexstr = false;
+        v.sort();
         v.dedup();
         let mut pmin = 0x00;
         let mut pmax = 0x00;
         for c in v.iter(){
             let d = *c as u32;
-            if c.is_ascii_hexdigit()==false{hexstring=false;}
+            if c.is_ascii_hexdigit()==false{
+                hexstring = false;
+            }else if c.is_ascii_hexdigit()&&c.is_ascii_alphabetic(){
+                alphabet_only_hexstr = true;
+            }
             match d{
                 0x20...0x29|0x5b...0x60|0x7b...0x7e=>num+=1,
                 0x30...0x39 =>{
@@ -79,11 +85,6 @@ impl AsciiCharType for CharVec{
                 },
                 0x41...0x5a|0x61...0x7a=>{
                     let (min,max) = self.alpha(d);
-                    if pmin == pmax{
-                        pmin = min;
-                        pmax = max;
-                        continue;
-                    }
                     if pmin <= min && min < pmax {
                         pmax = max;
                         continue;
@@ -93,15 +94,15 @@ impl AsciiCharType for CharVec{
                         continue;
                     }
                     // かぶりがなかったらとりあえず登録
-                    num += pmax-pmin+1;
+                    if pmin != pmax{num += pmax-pmin+1;}
                     // 新しく範囲を決定する。（ソートされているのでこれで問題なし）
-                    pmax=max;
-                    pmin=min;
+                    pmax = max;
+                    pmin = min;
                 }
                 _=>{},
             }
         }
-        if hexstring&&!numeric{
+        if hexstring && alphabet_only_hexstr{
             return 16;
         }
         if numeric{
@@ -182,11 +183,10 @@ fn main() {
         input!{s:String};
         vec=s.chars().collect();
     }
-    vec.sort();
     let chars = vec.get_chartype_count() as f64;
     let s:String = vec.into_iter().collect();
     println!("文字列： {}",s);
     println!("文字列長： {}",s.len());
     println!("この文字列に含まれる文字の種類(推定値)： {}",chars);
-    println!("強度(おおよそのbits数)： {}",chars.powi(s.len() as i32).log2() as u32);
+    println!("強度(おおよそのbit数)： {}",chars.powi(s.len() as i32).log2() as u32);
 }
