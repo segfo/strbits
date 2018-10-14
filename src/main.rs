@@ -59,7 +59,7 @@ impl CharVec{
         (0,0)
     }
 }
-
+use std::mem;
 impl AsciiCharType for CharVec{
     fn get_chartype_count(&self)->usize{
         let mut num=0;
@@ -94,12 +94,17 @@ impl AsciiCharType for CharVec{
                         continue;
                     }
                     // かぶりがなかったらとりあえず登録
-                    if pmin != pmax{num += pmax-pmin+1;}
+                    if pmin < pmax{num += pmax-pmin+1;}
+                    if pmin > pmax{num += pmin+1-pmax;}
+                    
                     // 新しく範囲を決定する。（ソートされているのでこれで問題なし）
                     pmax = max;
                     pmin = min;
-                }
-                _=>{},
+                },
+                _=>{
+                    // バイナリデータが入ってきた。
+                    return 256;
+                },
             }
         }
         if hexstring && alphabet_only_hexstr{
@@ -170,16 +175,16 @@ macro_rules! read_value {
     };
 }
 
-fn main() {
-    let mut arg:Vec<String> = env::args().collect();
-    let mut vec:CharVec;
+fn main() ->std::io::Result<()> {
+    let arg:Vec<String> = env::args().collect();
+    let vec:CharVec;
     if arg.len()>=2{
         vec=arg[1].chars().collect();
     }else{
         let stdout = std::io::stdout();
         let mut handle = stdout.lock();
-        handle.write("判定対象の文字列を入力してください > ".as_bytes());
-        handle.flush();
+        handle.write("判定対象の文字列を入力してください > ".as_bytes())?;
+        handle.flush()?;
         input!{s:String};
         vec=s.chars().collect();
     }
@@ -189,4 +194,5 @@ fn main() {
     println!("文字列長： {}",s.len());
     println!("この文字列に含まれる文字の種類(推定値)： {}",chars);
     println!("強度(おおよそのbit数)： {}",chars.powi(s.len() as i32).log2() as u32);
+    Ok(())
 }
