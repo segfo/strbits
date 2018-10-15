@@ -59,7 +59,7 @@ impl CharVec{
         (0,0)
     }
 }
-use std::mem;
+
 impl AsciiCharType for CharVec{
     fn get_chartype_count(&self)->usize{
         let mut num=0;
@@ -79,7 +79,7 @@ impl AsciiCharType for CharVec{
                 alphabet_only_hexstr = true;
             }
             match d{
-                0x20...0x29|0x5b...0x60|0x7b...0x7e=>num+=1,
+                0x20...0x29|0x3a...0x40|0x5b...0x60|0x7b...0x7e=>num+=1,
                 0x30...0x39 =>{
                     numeric = true;
                 },
@@ -193,6 +193,18 @@ fn main() ->std::io::Result<()> {
     println!("文字列： {}",s);
     println!("文字列長： {}",s.len());
     println!("この文字列に含まれる文字の種類(推定値)： {}",chars);
-    println!("強度(おおよそのbit数)： {}",chars.powi(s.len() as i32).log2() as u32);
+    let N = s.len();
+    let mut ans = 0 as u64;
+    let max_degree = 127;   // 256の127乗がf64で表せる最大の値なので。
+    let remainder = N % max_degree;
+    let num_of_degloop = N / max_degree;
+    let c = chars as f64;
+
+    for _i in 0..num_of_degloop{
+        ans += c.powi(max_degree as i32).log2() as u64;
+    }
+    ans += c.powi(remainder as i32).log2() as u64;
+
+    println!("強度(おおよそのbit数)： {}",ans);
     Ok(())
 }
