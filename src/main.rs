@@ -79,7 +79,7 @@ impl AsciiCharType for CharVec{
                 alphabet_only_hexstr = true;
             }
             match d{
-                0x20...0x29|0x3a...0x40|0x5b...0x60|0x7b...0x7e=>num+=1,
+                0x20...0x2f|0x3a...0x40|0x5b...0x60|0x7b...0x7e=>num+=1,
                 0x30...0x39 =>{
                     numeric = true;
                 },
